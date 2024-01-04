@@ -5,6 +5,7 @@ use warnings;
 
 use Http::Route;
 use Hangman::Http::Controllers::Controller;
+use Hangman::GamestateRepository;
 use Foundation::Appify;
 
 Http::Route::group({
@@ -51,6 +52,7 @@ Http::Route::group({
             );
 
         }),
+        
 
         Http::Route::get('/messages/{id}', sub {
 
@@ -97,8 +99,61 @@ Http::Route::group({
 
             }),
 
-        });
+        }),
+        Http::Route::group({
+            middlewares => [
+
+                sub { # Ensure Active Gamestate
+                    my $request = shift;
+                    my $next = shift;
+                    
+                    my $userID = user()->get('id');
+                    unless ($userID) {
+                        die "Cant play without being logged in!";
+                    }
+
+                    my $repo = Hangman::GamestateRepository->new();
+                    my $gamestate = $repo->findByUserId($userID);
+
+                    unless($gamestate) {
+                        $gamestate = $repo->startNewGameForUser($userID);
+                        $gamestate->saveInDB($repo->{controller});
+                    } 
+
+                    $request->{gamestate} = $gamestate;
+                    $request->{gamestaterepo} = $repo;
+                    return &$next($request); 
+                },
+
+            ],
+
+        }, sub {
+            
+            Http::Route::get('/play', sub {
+
+                my $request = shift;
+
+                return Hangman::Http::Controllers::Controller->new()->play(
+                    $request,
+                );
+
+            }),
+
+        }),
 
     });
 
 });
+
+# Http::Route::get('/play', sub {
+
+#             my $request = shift;
+
+#             # TODO: Implement default controller routing instead of creating
+#             # TODO: an instance of the controller class.
+
+#             return Hangman::Http::Controllers::Controller->new()->play(
+#                 $request,
+#             );
+
+#         }),

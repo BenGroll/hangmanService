@@ -1,0 +1,14 @@
+
+<style>
+    .guessfield {
+        border-radius: 10px;
+        border: 3px solid slategrey;
+    }
+</style>
+<div hcontainer>
+    <form action="">
+        <input type="text" id="guess" name="guess" maxlength="1" class="guessfield" style="text-align: center;">
+        <input type="submit" value="Guess" class="transition duration-500 rounded border-r-4 px-2 pt-1 pb-2 hover:text-slate-500 hover:bg-slate-50 hover:cursor-pointer <TMPL_IF NAME=active> bg-slate-50 <TMPL_ELSE> text-slate-50 bg-slate-500 </TMPL_IF>" href="%link%"></input>
+
+    </form>
+</div>
