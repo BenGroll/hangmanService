@@ -120,13 +120,17 @@ Http::Route::group({
                         $gamestate = $repo->startNewGameForUser($userID);
                         $gamestate->saveInDB($repo->{controller});
                     } 
-
+                    
                     $request->{gamestate} = $gamestate;
                     $request->{gamestaterepo} = $repo;
 
                     my $template = &$next($request);
+
                     if ($request->{gamestate}->isWon() or ($request->{gamestate}->{remaining_guesses} <= 0)) {
                         $repo->startNewGameForUser($userID);
+                    }
+                    if ($request->{gamestate}->isWon()) {
+                        $request->{gamestate}->saveAsHighscore($repo->{controller});
                     }
                     return $template;
                 },

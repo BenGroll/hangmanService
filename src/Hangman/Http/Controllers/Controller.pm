@@ -7,13 +7,9 @@ use Data::Dumper;
 use Foundation::Appify;
 use HTML::Template;
 
-sub getFolder {
-    return join ('/', splice(@{[split(/\//, __FILE__)]},
-        0, 
-        scalar @{[split(/\//, __FILE__)]} -1)) . "/";
-}
 
-use lib getFolder() . '../../';
+
+use lib join ('/', splice(@{[split(/\//, __FILE__)]}, 0, scalar @{[split(/\//, __FILE__)]} -1)) . '/../../';
 use Hangman::GamestateRepository;
 
 sub new {
@@ -83,6 +79,10 @@ sub showMessage {
     return $self->welcome($request);
 }
 
-
+sub getFolder {
+    return join ('/', splice(@{[split(/\//, __FILE__)]},
+        0, 
+        scalar @{[split(/\//, __FILE__)]} -1)) . "/";
+}
 
 1;

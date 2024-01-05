@@ -66,7 +66,7 @@ sub template {
     my $aftergamebar = '';
     if($win || $lose) {
         my $bar = HTML::Template->new(filename => getFolder() . '../../templates/components/aftergamebar.tmpl');
-        $bar->param(WINORLOSE => $win);
+        $bar->param(WINORLOSE => $win, SOLUTION => $self->{word_to_guess});
         $aftergamebar = $bar->output();
 
     }
@@ -115,6 +115,23 @@ sub fromUserID {
     }
 }
 
+sub highscoreFromUserID {
+    my $class = shift;
+    my $userid = shift;
+    my $db = shift;
+    
+    my $query = "SELECT * FROM highscores WHERE user_id = ?;";
+    my $sth = $db->prepare($query);
+    $sth->execute($userid);
+    my $row = $sth->fetchrow_arrayref();
+
+    unless ($row) {
+        return undef;
+    } else {
+        return $class->new(@$row);
+    }
+}
+
 sub saveInDB {
     my $self = shift;
     my $db = shift or die "Missing DB to save into";
@@ -131,6 +148,26 @@ sub saveInDB {
         $sth = $db->prepare($query);
         $sth->execute($self->{id}, $self->{user_id}, $self->{total_guesses}, $self->{remaining_guesses}, $self->{word_to_guess}, $self->{guessed_characters});
     }
+
+    $self->{id} = $sth->{mysql_insertid};
+    return $self;
+}
+
+sub saveAsHighscore {
+    my $self = shift;
+    my $db = shift or die "Missing DB to save into";
+
+    # my $testifalreadyexists = ref($self)->highscoreFromUserID($self->{user_id}, $db);
+    my $sth;
+    # if($testifalreadyexists) {
+    #     my $query = "UPDATE highscores SET id = ?, user_id = ?, total_guesses = ?, remaining_guesses = ?, word_to_guess = ?, guessed_characters = ? WHERE user_id = ?;";
+    #     $sth = $db->prepare($query);
+    #     $sth->execute($self->{id}, $self->{user_id}, $self->{total_guesses}, $self->{remaining_guesses}, $self->{word_to_guess}, $self->{guessed_characters}, $self->{user_id});
+    # } else {
+        my $query = "INSERT INTO highscores (id, user_id, total_guesses, remaining_guesses, word_to_guess, guessed_characters) VALUES (?, ?, ?, ?, ?, ?);";
+        $sth = $db->prepare($query);
+        $sth->execute($self->{id}, $self->{user_id}, $self->{total_guesses}, $self->{remaining_guesses}, $self->{word_to_guess}, $self->{guessed_characters});
+    # }
 
     $self->{id} = $sth->{mysql_insertid};
     return $self;

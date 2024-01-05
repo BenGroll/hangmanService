@@ -48,7 +48,26 @@ sub startNewGameForUser {
 }
 
 sub chooseWord {
-    return 'HalloWelt';
+    my $self = shift;
+    my $file = getFolder() . 'wortliste.txt';
+    open my $info, $file or die 'Could not open $file: $!';
+
+    my @words = ();
+
+    while (my $word = <$info>) {
+        chomp($word);
+        push(@words, $word);
+    }
+    close $info;
+    my $wordidx = rand(scalar @words);
+    my $word = @words[$wordidx];  
+    return $word;
+}
+
+sub getFolder {
+    return join ('/', splice(@{[split(/\//, __FILE__)]},
+        0, 
+        scalar @{[split(/\//, __FILE__)]} -1)) . "/";
 }
 
 1;
