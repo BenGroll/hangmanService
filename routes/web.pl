@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+use Data::Dumper;
 use Http::Route;
 use Hangman::Http::Controllers::Controller;
 use Hangman::GamestateRepository;
@@ -102,8 +103,8 @@ Http::Route::group({
         }),
         Http::Route::group({
             middlewares => [
-
-                sub { # Ensure Active Gamestate
+                # Ensure active Gamestate
+                sub {
                     my $request = shift;
                     my $next = shift;
                     
@@ -122,8 +123,36 @@ Http::Route::group({
 
                     $request->{gamestate} = $gamestate;
                     $request->{gamestaterepo} = $repo;
+
+                    my $template = &$next($request);
+                    if ($request->{gamestate}->isWon() or ($request->{gamestate}->{remaining_guesses} <= 0)) {
+                        $repo->startNewGameForUser($userID);
+                    }
+                    return $template;
+                },
+                # Check for and process Guess
+                sub {
+                    my $request = shift;
+                    my $next = shift;
+
+                    my $params = \%{$request->Vars};
+                    my $guess = $params->{guess};
+                    my $repo = $request->{gamestaterepo};
+                    my $gamestate = $request->{gamestate};
+
+                    if($guess && index(lc($gamestate->{guessed_characters}), lc($guess)) == -1) {
+                        my $guesses = $gamestate->{guessed_characters};
+                        $gamestate->{guessed_characters} = $guesses . lc($guess);
+                        if (index(lc($gamestate->{word_to_guess}), lc($guess)) == -1) {
+                            $gamestate->{remaining_guesses} = $gamestate->{remaining_guesses} - 1;
+                        }
+                        $gamestate->saveInDB($repo->{controller});
+                    }
+                    $request->{gamestate} = $gamestate;
+
                     return &$next($request); 
                 },
+                
 
             ],
 

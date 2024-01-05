@@ -8,6 +8,6 @@ CREATE TABLE gamestates (
     word_to_guess VARCHAR(255) NOT NULL,
     guessed_characters VARCHAR(255)
 );
-INSERT INTO gamestates 
-    (id,    user_id,    total_guesses,  remaining_guesses,  word_to_guess,  guessed_characters) VALUES 
-    (1,     1,          10,             10,                 'HalloWelt',    ''              );
+-- INSERT INTO gamestates 
+--     (id,    user_id,    total_guesses,  remaining_guesses,  word_to_guess,  guessed_characters) VALUES 
+--     (1,     1,          10,             10,                 'HalloWelt',    ''              );

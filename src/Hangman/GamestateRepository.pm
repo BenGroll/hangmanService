@@ -5,6 +5,7 @@ use warnings;
 
 use Data::Dumper;
 use Hangman::Gamestate;
+use Foundation::Appify;
 
 
 sub new {
@@ -28,7 +29,7 @@ sub findByUserId {
 
 sub startNewGameForUser {
     my $self = shift;
-    my $userid = shift;
+    my $userid = user()->get('id');
 
     my $newGamestate = Hangman::Gamestate->new(
         undef,
@@ -38,8 +39,12 @@ sub startNewGameForUser {
         $self->chooseWord(),
         ''
     );
-    return $newGamestate->saveInDB($self->{controller});
+    my $currentGameState = Hangman::Gamestate->fromUserID($userid, $self->{controller});
+    if($currentGameState) {
+        $currentGameState->delete($self->{controller});
+    }
 
+    return $newGamestate->saveInDB($self->{controller});
 }
 
 sub chooseWord {
