@@ -103,22 +103,36 @@ Http::Route::group({
         }),
         Http::Route::group({
             middlewares => [
-                # Ensure active Gamestate
+                # Check for difficulty change
                 sub {
                     my $request = shift;
                     my $next = shift;
-                    
+
                     my $userID = user()->get('id');
                     unless ($userID) {
                         die "Cant play without being logged in!";
                     }
 
+                    my $params = \%{$request->Vars};
+                    my $diff = $params->{difficulty};
+
                     my $repo = Hangman::GamestateRepository->new();
-                    my $gamestate = $repo->findByUserId($userID);
+
+                    my $newgamestate = $repo->startNewGameForUser($diff);
+                    $newgamestate->saveInDB($repo->{controller});
+
+                    return &$next($request);
+                },
+                # Ensure active Gamestate
+                sub {
+                    my $request = shift;
+                    my $next = shift;
+
+                    my $repo = Hangman::GamestateRepository->new();
+                    my $gamestate = $repo->findByUserId(user()->get('id'));
 
                     unless($gamestate) {
-                        $gamestate = $repo->startNewGameForUser($userID);
-                        $gamestate->saveInDB($repo->{controller});
+                        die "No Game!";
                     } 
                     
                     $request->{gamestate} = $gamestate;
@@ -127,7 +141,7 @@ Http::Route::group({
                     my $template = &$next($request);
 
                     if ($request->{gamestate}->isWon() or ($request->{gamestate}->{remaining_guesses} <= 0)) {
-                        $repo->startNewGameForUser($userID);
+                        $repo->startNewGameForUser($gamestate->{total_guesses});
                     }
                     if ($request->{gamestate}->isWon()) {
                         $request->{gamestate}->saveAsHighscore($repo->{controller});

@@ -64,6 +64,7 @@
         .opaque {
             display: none;
         }
+
     </style>
 <div id="loading" class="loading opaque center">
     <div class="waves"></div>
@@ -80,17 +81,40 @@
 <div id="loadinginfo" class="opaque center">Loading game...</div>
 
 </div>
+<TMPL_IF NAME="RESUMABLE">
     <a href="/apps/hangman/play" style="margin: 10%; white-space: nowrap;" id="playbutton">
-        <code id='play' class="transition duration-500 text-slate-50 bg-slate-500 rounded py-1 px-2 border-r-4 hover:text-slate-500 hover:bg-slate-50">Start/Resume Round</code>
+        <code id='play' class="transition duration-500 text-slate-50 bg-slate-500 rounded py-1 px-2 border-r-4 hover:text-slate-500 hover:bg-slate-50">Resume Round</code>
     </a>
+</TMPL_IF>
+    <div class="hcontainer">
+        <div class="custom-select" style="width:200px;">
+            <form method="GET" action="/apps/hangman/play">
+            <select id="difficulty" name="difficulty" required>
+              <option value="0">New Game Difficulty:</option>
+              <option value="4">New Game Difficulty 4</option>
+              <option value="5">New Game Difficulty 5</option>
+              <option value="6">New Game Difficulty 6</option>
+              <option value="7">New Game Difficulty 7</option>
+              <option value="8">New Game Difficulty 8</option>
+              <option value="9">New Game Difficulty 9</option>
+              <option value="10">New Game Difficulty 10</option>
+              <option value="11">New Game Difficulty 11</option>
+              <option value="12">New Game Difficulty 12</option>
+            </select>
+            <button type="submit" style="padding: 10px; margin-top: 10px; width: 100%;"><code id='start' class="transition duration-500 text-slate-50 bg-slate-500 rounded py-1 px-2 border-r-4 hover:text-slate-500 hover:bg-slate-50">Start</code></button>
+            </form>
+          </div>
+    </div>
 </div>
 <script>
     document.getElementById('play').onclick = function() {    
         const info = document.getElementById('loadinginfo');
         const waves = document.getElementById('loading');
-        const button = document.getElementById('playbutton');
         info.classList.remove('opaque');
         waves.classList.remove('opaque');
-        button.classList.add('opaque');
+        const playbutton = document.getElementById('playbutton');
+        const newbutton = document.getElementById('newbutton');
+        playbutton.classList.add('opaque');
+        newbutton.classList.add('opaque');
     }
 </script>

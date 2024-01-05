@@ -29,14 +29,16 @@ sub findByUserId {
 
 sub startNewGameForUser {
     my $self = shift;
+    my $difficulty = shift;
+
     my $userid = user()->get('id');
 
     my $newGamestate = Hangman::Gamestate->new(
         undef,
         $userid,
-        10,
-        10,
-        $self->chooseWord(),
+        $difficulty,
+        $difficulty,
+        $self->chooseWordOfLength($difficulty),
         ''
     );
     my $currentGameState = Hangman::Gamestate->fromUserID($userid, $self->{controller});
@@ -47,16 +49,19 @@ sub startNewGameForUser {
     return $newGamestate->saveInDB($self->{controller});
 }
 
-sub chooseWord {
+sub chooseWordOfLength {
     my $self = shift;
+    my $length = shift or die "No Word Length Specified!";
     my $file = getFolder() . 'wortliste.txt';
     open my $info, $file or die 'Could not open $file: $!';
 
     my @words = ();
-
     while (my $word = <$info>) {
         chomp($word);
-        push(@words, $word);
+        my $wordL = scalar split(//, $word);
+        if($wordL == $length) {
+            push(@words, $word);
+        }
     }
     close $info;
     my $wordidx = rand(scalar @words);

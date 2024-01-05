@@ -29,6 +29,14 @@ sub welcome {
 
     my $playbutton = HTML::Template->new(filename => getFolder() . '../../../../templates/components/playbutton.tmpl');
 
+    my $repo = Hangman::GamestateRepository->new();
+
+    my $activegame = $repo->findByUserId(user()->get('id'));
+
+    if($activegame) {
+        $playbutton->param(RESUMABLE => 1);
+    }
+
     my $template = &_::template('hangman::welcome', {
         email => user()->get('email'),
         content => $playbutton->output(),
